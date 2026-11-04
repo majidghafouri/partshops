@@ -23,15 +23,19 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
+export type SessionRole = "CUSTOMER" | "SELLER" | "ADMIN";
+export type SessionSellerStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+
 export interface SessionUser {
   id: string;
   name: string;
   email: string | null;
   phone: string | null;
-  role: "BUYER" | "SELLER" | "ADMIN";
+  role: SessionRole;
   city: string | null;
   sellerProfileId: string | null;
   shopName: string | null;
+  sellerStatus: SessionSellerStatus | null;
 }
 
 export async function createSession(userId: string): Promise<void> {
@@ -72,7 +76,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       where: { id: sessionId },
       include: {
         user: {
-          include: { sellerProfile: { select: { id: true, shopName: true } } },
+          include: {
+            sellerProfile: { select: { id: true, shopName: true, status: true } },
+          },
         },
       },
     });
@@ -90,6 +96,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       city: session.user.city,
       sellerProfileId: session.user.sellerProfile?.id ?? null,
       shopName: session.user.sellerProfile?.shopName ?? null,
+      sellerStatus: session.user.sellerProfile?.status ?? null,
     };
   } catch {
     return null;
@@ -111,6 +118,10 @@ export async function destroySession(): Promise<void> {
     }
   }
   cookieStore.delete(SESSION_COOKIE);
+}
+
+export function isApprovedSeller(user: SessionUser | null): boolean {
+  return !!user && user.role === "SELLER" && user.sellerStatus === "APPROVED" && !!user.sellerProfileId;
 }
 
 export function generateOtpCode(): string {

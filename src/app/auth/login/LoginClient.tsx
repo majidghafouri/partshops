@@ -29,12 +29,18 @@ export default function LoginClient() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const fieldError = (key: string) => fieldErrors[key];
+  const fieldClass = (key: string, base: string) =>
+    `${base} ${fieldError(key) ? "border-danger focus:border-danger focus:ring-danger" : ""}`;
 
   function redirectHome(role?: string) {
     if (nextUrl) {
       router.push(nextUrl);
     } else {
-      router.push(role === "SELLER" ? "/seller/dashboard" : "/");
+      router.push(
+        role === "ADMIN" ? "/admin" : role === "SELLER" ? "/seller/dashboard" : "/account/requests"
+      );
     }
     router.refresh();
   }
@@ -53,6 +59,7 @@ export default function LoginClient() {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    setFieldErrors({});
     setSaving(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -62,6 +69,7 @@ export default function LoginClient() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.field) setFieldErrors({ [data.field]: data.error });
         setError(data.error || "خطا در ورود");
         return;
       }
@@ -76,6 +84,7 @@ export default function LoginClient() {
   async function handleOtpRequest() {
     setError(null);
     setInfo(null);
+    setFieldErrors({});
     setSaving(true);
     try {
       const res = await fetch("/api/auth/otp/request", {
@@ -85,6 +94,7 @@ export default function LoginClient() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.field) setFieldErrors({ [data.field]: data.error });
         setError(data.error || "خطا در ارسال کد");
         return;
       }
@@ -102,6 +112,7 @@ export default function LoginClient() {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    setFieldErrors({});
     setSaving(true);
     try {
       const res = await fetch("/api/auth/otp/verify", {
@@ -111,6 +122,7 @@ export default function LoginClient() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.field) setFieldErrors({ [data.field]: data.error });
         setError(data.error || "خطا در تایید کد");
         return;
       }
@@ -193,7 +205,7 @@ export default function LoginClient() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <form onSubmit={handlePasswordLogin} noValidate className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-2">
                     {method === "phone" ? "شماره موبایل" : "آدرس ایمیل"}
@@ -204,14 +216,17 @@ export default function LoginClient() {
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder={method === "phone" ? "۰۹۱۲۱۲۳۴۵۶۷" : "example@email.com"}
-                      className="w-full h-12 pr-12 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      className={fieldClass(
+                        "identifier",
+                        "w-full h-12 pr-12 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      )}
                       dir={method === "phone" ? "ltr" : "rtl"}
-                      required
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2">
                       {method === "phone" ? <Phone className="w-4 h-4 text-muted" /> : <Mail className="w-4 h-4 text-muted" />}
                     </span>
                   </div>
+                  {fieldError("identifier") && <p className="mt-1 text-[11px] text-danger">{fieldError("identifier")}</p>}
                 </div>
 
                 <div>
@@ -222,8 +237,10 @@ export default function LoginClient() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="رمز عبور خود را وارد کنید"
-                      className="w-full h-12 pr-12 pl-12 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      required
+                      className={fieldClass(
+                        "password",
+                        "w-full h-12 pr-12 pl-12 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      )}
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2">
                       <Lock className="w-4 h-4 text-muted" />
@@ -236,6 +253,7 @@ export default function LoginClient() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {fieldError("password") && <p className="mt-1 text-[11px] text-danger">{fieldError("password")}</p>}
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
@@ -260,7 +278,7 @@ export default function LoginClient() {
               </form>
             </>
           ) : (
-            <form onSubmit={otpSent ? handleOtpVerify : (e) => { e.preventDefault(); handleOtpRequest(); }} className="space-y-4">
+            <form onSubmit={otpSent ? handleOtpVerify : (e) => { e.preventDefault(); handleOtpRequest(); }} noValidate className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-2">شماره موبایل</label>
                 <div className="relative">
@@ -270,14 +288,17 @@ export default function LoginClient() {
                     onChange={(e) => setOtpPhone(e.target.value)}
                     placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                     disabled={otpSent}
-                    className="w-full h-12 pr-12 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:opacity-60"
+                    className={fieldClass(
+                      "phone",
+                      "w-full h-12 pr-12 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:opacity-60"
+                    )}
                     dir="ltr"
-                    required
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2">
                     <Phone className="w-4 h-4 text-muted" />
                   </span>
                 </div>
+                {fieldError("phone") && <p className="mt-1 text-[11px] text-danger">{fieldError("phone")}</p>}
               </div>
 
               {otpSent && (
@@ -291,10 +312,13 @@ export default function LoginClient() {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                     placeholder="۱۲۳۴۵۶"
-                    className="w-full h-12 pr-4 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors tracking-[0.5em] text-center"
+                    className={fieldClass(
+                      "code",
+                      "w-full h-12 pr-4 pl-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors tracking-[0.5em] text-center"
+                    )}
                     dir="ltr"
-                    required
                   />
+                  {fieldError("code") && <p className="mt-1 text-[11px] text-danger">{fieldError("code")}</p>}
                 </div>
               )}
 

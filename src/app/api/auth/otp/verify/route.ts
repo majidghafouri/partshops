@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { validationError } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/auth";
 
@@ -16,10 +17,7 @@ export async function POST(request: NextRequest) {
     const parsed = verifySchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json(validationError(parsed.error), { status: 400 });
     }
 
     const { phone, code } = parsed.data;

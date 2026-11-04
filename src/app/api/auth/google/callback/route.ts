@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
             password: randomPassword,
             googleId: profile.sub,
             avatar: profile.picture,
-            role: "BUYER",
+            role: "CUSTOMER",
           },
         });
       } catch (error) {

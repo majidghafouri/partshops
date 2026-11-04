@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { validationError } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
 import { generateOtpCode } from "@/lib/auth";
+import { isSmsConfigured, sendOtpSms } from "@/lib/sms";
 
 const requestSchema = z.object({
   phone: z.string().regex(/^09\d{9}$/, "شماره موبایل نامعتبر است"),
@@ -16,10 +18,7 @@ export async function POST(request: NextRequest) {
     const parsed = requestSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json(validationError(parsed.error), { status: 400 });
     }
 
     const { phone } = parsed.data;
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     });
     if (recent) {
       return NextResponse.json(
-        { error: "برای درخواست کد جدید کمی صبر کنید" },
+        { error: "برای درخواست کد جدید کمی صبر کنید", field: "phone" },
         { status: 429 }
       );
     }
@@ -41,13 +40,21 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({ where: { phone } });
     if (!user) {
       return NextResponse.json(
-        { error: "کاربری با این شماره یافت نشد. ابتدا ثبت‌نام کنید." },
+        { error: "کاربری با این شماره یافت نشد. ابتدا ثبت‌نام کنید.", field: "phone" },
         { status: 404 }
       );
     }
 
+    const smsConfigured = isSmsConfigured();
+    if (!smsConfigured && process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "سرویس پیامک هنوز پیکربندی نشده است", field: "phone" },
+        { status: 503 }
+      );
+    }
+
     const code = generateOtpCode();
-    await prisma.otpCode.create({
+    const otp = await prisma.otpCode.create({
       data: {
         phone,
         code,
@@ -55,12 +62,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Dev: no SMS provider — log code to console
-    console.log(`[OTP] ${phone} => ${code}`);
+    if (smsConfigured) {
+      try {
+        await sendOtpSms(phone, code);
+      } catch {
+        await prisma.otpCode.delete({ where: { id: otp.id } });
+        return NextResponse.json(
+          { error: "ارسال پیامک انجام نشد؛ دوباره تلاش کنید", field: "phone" },
+          { status: 502 }
+        );
+      }
+    }
 
     return NextResponse.json({
       message: "کد یکبار مصرف ارسال شد",
-      // TODO (sms): remove devCode once SMS provider (Kavenegar/SMS.ir) is wired
       devCode: process.env.NODE_ENV === "production" ? undefined : code,
     });
   } catch (error) {
