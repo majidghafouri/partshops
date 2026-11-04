@@ -18,16 +18,50 @@
   --color-warning: #eab308;
   --color-muted: #71717a;
   --color-muted-foreground: #a1a1aa;
-  --font-vazirmatn: "Vazirmatn", "Tahoma", sans-serif;
+  --font-dana: "Dana", "Tahoma", sans-serif;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-extralight.woff2") format("woff2");
+  font-weight: 200;
   font-style: normal;
-  font-weight: 100 900;
   font-display: swap;
-  src: url("https://fonts.gstatic.com/s/vazirmatn/v15/DXXy8crDnOAYSEPbniyQ.woff2")
-    format("woff2");
+}
+@font-face {
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-demibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dana";
+  src: url("/assets/fonts/woff2/dana-fanum-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
 * {
@@ -38,7 +72,7 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-vazirmatn);
+  font-family: var(--font-dana);
   direction: rtl;
   min-height: 100vh;
 }

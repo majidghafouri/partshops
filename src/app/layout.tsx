@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fa" dir="rtl" className="dark h-full antialiased">
-      <body className="min-h-full flex flex-col bg-background text-foreground" style={{ fontFamily: "Vazirmatn, Tahoma, sans-serif" }}>
+      <body className="min-h-full flex flex-col bg-background text-foreground" style={{ fontFamily: "Dana, Tahoma, sans-serif" }}>
         <HeaderServer />
         <main className="flex-1">{children}</main>
         <Footer />
