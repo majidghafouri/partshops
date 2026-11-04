@@ -8,56 +8,53 @@ datasource db {
 }
 
 enum UserRole {
-  BUYER
+  CUSTOMER
   SELLER
   ADMIN
 }
 
-enum ProductCondition {
-  NEW
-  USED
-  REFURBISHED
+enum SellerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }
 
-enum OrderStatus {
-  PENDING
-  CONFIRMED
+enum RequestStatus {
+  OPEN
+  ACCEPTED
   SHIPPED
   DELIVERED
+  EXPIRED
   CANCELLED
 }
 
-enum PlaqueProvince {
-  TEHRAN
-  ISFAHAN
-  FARS
-  KHORASAN
-  AZERBAIJAN
-  KERMANSHAH
-  HAMEDAN
-  LORESTAN
-  KHZESTAN
-  MAZANDARAN
-  GILAN
-  KURDISTAN
-  MARKAZI
-  QOM
-  ZANJAN
-  GOLESTAN
-  CHAHARMAHAL
-  KHOZESTAN
-  ilam
-  BUSHEHR
-  YAZD
-  KERMAN
-  SISAN
-  BALUCHESTAN
-  HORMOZGAN
-  ARDABIL
-  QAZVIN
-  ALBORZ
-  GOLGAN
-  OTHER
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum AttachmentKind {
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+enum NotificationType {
+  NEW_REQUEST
+  OFFER_RECEIVED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  REQUEST_EXPIRED
+  REQUEST_CLOSED
+  REQUEST_SHIPPED
+  REQUEST_DELIVERED
+  SELLER_REGISTERED
+  SELLER_APPROVED
+  SELLER_REJECTED
+  SYSTEM
 }
 
 model User {
@@ -68,28 +65,15 @@ model User {
   password  String
   googleId  String?  @unique
   avatar    String?
-  role      UserRole @default(BUYER)
+  role      UserRole @default(CUSTOMER)
   city      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sellerProfile  SellerProfile?
-  orders         Order[]
-  reviews        Review[]
-  cartItems      CartItem[]
-  sessions       Session[]
-  wishlist       Wishlist[]
-}
-
-model Wishlist {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([userId, productId])
+  sellerProfile SellerProfile?
+  requests      PartRequest[]  @relation("CustomerRequests")
+  notifications Notification[]
+  sessions      Session[]
 }
 
 model Session {
@@ -113,161 +97,163 @@ model OtpCode {
 }
 
 model SellerProfile {
-  id          String  @id @default(cuid())
-  userId      String  @unique
-  user        User    @relation(fields: [userId], references: [id])
-  shopName    String
-  description String?
-  logo        String?
-  rating      Float   @default(0)
-  totalSales  Int     @default(0)
-  verified    Boolean @default(false)
-  city        String?
-  address     String?
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopName        String
+  description     String?
+  logo            String?
+  phone           String?
+  city            String?
+  address         String?
+  status          SellerStatus @default(PENDING)
+  rejectionReason String?
+  adminNote       String?
+  approvedAt      DateTime?
+  rating          Float        @default(0)
+  totalSales      Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  products Product[]
+  categories     SellerCategory[]
+  offers         Offer[]
+  acceptedRequests PartRequest[] @relation("AcceptedSeller")
+
+  @@index([status, createdAt])
 }
 
 model Category {
-  id       String     @id @default(cuid())
-  name     String
-  slug     String     @unique
-  icon     String?
-  parentId String?
-  parent   Category?  @relation("SubCategories", fields: [parentId], references: [id])
-  children Category[] @relation("SubCategories")
-
-  products Product[]
-}
-
-model CarBrand {
-  id       String     @id @default(cuid())
-  name     String
-  slug     String     @unique
-  logo     String?
-  country  String?
-
-  models CarModel[]
-}
-
-model CarModel {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
-  slug      String    @unique
-  brandId   String
-  brand     CarBrand  @relation(fields: [brandId], references: [id])
-  yearStart Int?
-  yearEnd   Int?
-
-  products Product[]
-  compatibleCars ProductCar[]
-}
-
-model Product {
-  id            String          @id @default(cuid())
-  title         String
-  slug          String          @unique
-  description   String?
-  price         Int
-  originalPrice Int?
-  currency      String          @default("IRR")
-  condition     ProductCondition @default(NEW)
-  partNumber    String?
-  oemNumber     String?
-  brand         String?
-  origin        String?
-  warranty      String?
-  weight        Float?
-  categoryId    String
-  category      Category        @relation(fields: [categoryId], references: [id])
-  carModelId    String?
-  carModel      CarModel?       @relation(fields: [carModelId], references: [id])
-  sellerId      String
-  seller        SellerProfile   @relation(fields: [sellerId], references: [id])
-  stock         Int             @default(0)
-  salesCount    Int             @default(0)
-  rating        Float           @default(0)
-  reviewCount   Int             @default(0)
-  featured      Boolean         @default(false)
-  active        Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  images     ProductImage[]
-  reviews    Review[]
-  orderItems OrderItem[]
-  cartItems  CartItem[]
-  compatibleCars ProductCar[]
-  wishlistedBy  Wishlist[]
-}
-
-model ProductImage {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url       String
-  alt       String?
-  primary   Boolean @default(false)
-  order     Int     @default(0)
-}
-
-model ProductCar {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  carModelId String
-  carModel  CarModel @relation(fields: [carModelId], references: [id])
-  yearFrom  Int?
-  yearTo    Int?
-
-  @@unique([productId, carModelId])
-}
-
-model Review {
-  id        String  @id @default(cuid())
-  rating    Int
-  comment   String?
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+  slug      String   @unique
+  icon      String?
+  sortOrder Int      @default(0)
+  parentId  String?
+  parent    Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children  Category[] @relation("SubCategories")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sellers      SellerCategory[]
+  requestItems RequestItem[]
+
+  @@index([parentId, sortOrder])
 }
 
-model Order {
-  id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  status        OrderStatus @default(PENDING)
-  totalAmount   Int
-  shippingAddress String?
-  city          String?
-  postalCode    String?
-  phone         String?
-  description   String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+model SellerCategory {
+  id         String   @id @default(cuid())
+  sellerId   String
+  seller     SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
 
-  items OrderItem[]
+  @@unique([sellerId, categoryId])
+  @@index([categoryId])
 }
 
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Int
+model PartRequest {
+  id         String        @id @default(cuid())
+  customerId String
+  customer   User          @relation("CustomerRequests", fields: [customerId], references: [id], onDelete: Cascade)
+  status     RequestStatus @default(OPEN)
+  expiresAt  DateTime
+  city       String?
+  address    String
+  phone      String?
+  plateNumber String?
+  carMake    String?
+  carModel   String?
+  carYear    Int?
+  notes      String?
+
+  acceptedOfferId  String?       @unique
+  acceptedOffer    Offer?        @relation("AcceptedOffer", fields: [acceptedOfferId], references: [id])
+  acceptedSellerId String?
+  acceptedSeller   SellerProfile? @relation("AcceptedSeller", fields: [acceptedSellerId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  items         RequestItem[]
+  offers        Offer[]        @relation("RequestOffers")
+  notifications Notification[]
+  attachments   Attachment[]
+
+  @@index([status, expiresAt])
+  @@index([customerId, createdAt])
 }
 
-model CartItem {
-  id        String  @id @default(cuid())
+model RequestItem {
+  id          String      @id @default(cuid())
+  requestId   String
+  request     PartRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  title       String
+  description String?
+  brand       String?
+  partNumber  String?
+  quantity    Int         @default(1)
+  notes       String?
+  createdAt   DateTime    @default(now())
+  attachments Attachment[]
+
+  @@index([requestId])
+  @@index([categoryId])
+}
+
+model Offer {
+  id                     String        @id @default(cuid())
+  requestId              String
+  request                PartRequest   @relation("RequestOffers", fields: [requestId], references: [id], onDelete: Cascade)
+  sellerId               String
+  seller                 SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  totalPrice             Int
+  deliveryFee            Int           @default(0)
+  estimatedDeliveryHours Int?
+  note                   String?
+  status                 OfferStatus   @default(PENDING)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  acceptedRequest PartRequest? @relation("AcceptedOffer")
+
+  @@unique([requestId, sellerId])
+  @@index([sellerId, status])
+  @@index([requestId, status])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int     @default(1)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  requestId String?
+  request   PartRequest?     @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
-  @@unique([userId, productId])
+  @@index([userId, isRead, createdAt])
+}
+
+model Attachment {
+  id              String         @id @default(cuid())
+  kind            AttachmentKind
+  pathname        String         @unique
+  url             String
+  mimeType        String
+  size            Int
+  durationSeconds Int?
+  requestId       String
+  request         PartRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  itemId          String?
+  item            RequestItem?   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+
+  @@index([requestId])
+  @@index([itemId])
 }

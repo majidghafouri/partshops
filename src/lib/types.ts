@@ -1,127 +1,115 @@
-export interface Product {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  price: number;
-  originalPrice?: number;
-  currency: string;
-  condition: "NEW" | "USED" | "REFURBISHED";
-  partNumber?: string;
-  oemNumber?: string;
-  brand?: string;
-  origin?: string;
-  warranty?: string;
-  category: Category;
-  carModel?: CarModel;
-  seller: SellerProfile;
-  stock: number;
-  salesCount: number;
-  rating: number;
-  reviewCount: number;
-  featured: boolean;
-  images: ProductImage[];
-  compatibleCars?: ProductCar[];
-  createdAt: Date;
-}
+export type RequestStatus =
+  | "OPEN"
+  | "ACCEPTED"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "EXPIRED"
+  | "CANCELLED";
 
-export interface ProductImage {
-  id: string;
-  url: string;
-  alt?: string;
-  primary: boolean;
-}
+export type OfferStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
 
-export interface ProductCar {
-  carModel: CarModel;
-  yearFrom?: number;
-  yearTo?: number;
-}
+export type SellerStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
-  icon?: string;
-  parentId?: string;
+  icon?: string | null;
+  parentId?: string | null;
+  sortOrder?: number;
   children?: Category[];
-  productCount?: number;
+  requestCount?: number;
+  sellerCount?: number;
 }
 
-export interface CarBrand {
-  id: string;
-  name: string;
-  slug: string;
-  logo?: string;
-  country?: string;
-  models?: CarModel[];
-  modelCount?: number;
-}
-
-export interface CarModel {
-  id: string;
-  name: string;
-  slug: string;
-  brand: CarBrand;
-  yearStart?: number;
-  yearEnd?: number;
-}
-
-export interface SellerProfile {
+export interface SellerSummary {
   id: string;
   shopName: string;
-  description?: string;
-  logo?: string;
+  city?: string | null;
+  phone?: string | null;
+  address?: string | null;
   rating: number;
   totalSales: number;
-  verified: boolean;
-  city?: string;
+  status: SellerStatus;
+  description?: string | null;
+  categories?: { id: string; name: string }[];
 }
 
-export interface Review {
+export type AttachmentKind = "IMAGE" | "AUDIO" | "VIDEO";
+
+export interface AttachmentView {
   id: string;
-  rating: number;
-  comment?: string;
-  userName: string;
-  createdAt: Date;
+  kind: AttachmentKind;
+  mimeType: string;
+  size: number;
+  durationSeconds?: number | null;
+  url: string;
 }
 
-export interface Order {
+export interface RequestItemView {
   id: string;
-  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-  totalAmount: number;
-  items: OrderItem[];
-  createdAt: Date;
-}
-
-export interface OrderItem {
-  id: string;
-  product: Product;
+  title: string;
+  description?: string | null;
+  brand?: string | null;
+  partNumber?: string | null;
   quantity: number;
-  price: number;
+  notes?: string | null;
+  category: { id: string; name: string; icon?: string | null };
+  attachments: AttachmentView[];
 }
 
-export interface FilterState {
-  category?: string;
-  subcategory?: string;
-  brand?: string;
-  carModel?: string;
-  carYear?: number;
-  yearFrom?: number;
-  yearTo?: number;
-  priceMin?: number;
-  priceMax?: number;
-  condition?: string;
-  city?: string;
-  seller?: string;
-  sort?: string;
-  search?: string;
-  plaque?: string;
+export interface OfferView {
+  id: string;
+  totalPrice: number;
+  deliveryFee: number;
+  estimatedDeliveryHours?: number | null;
+  note?: string | null;
+  status: OfferStatus;
+  createdAt: string;
+  seller: SellerSummary;
+  isMine?: boolean;
 }
 
-export interface PlaqueInfo {
-  digits1: string;
-  letter: string;
-  digits2: string;
-  regionCode: string;
+export interface RequestView {
+  id: string;
+  status: RequestStatus;
+  createdAt: string;
+  expiresAt: string;
+  closedAt?: string | null;
+  city?: string | null;
+  address: string;
+  phone?: string | null;
+  plateNumber?: string | null;
+  carMake?: string | null;
+  carModel?: string | null;
+  carYear?: number | null;
+  notes?: string | null;
+  customer: { id: string; name: string; phone?: string | null };
+  items: RequestItemView[];
+  attachments: AttachmentView[];
+  offers: OfferView[];
+  offerCount: number;
+  myOffer?: OfferView | null;
+  acceptedOffer?: OfferView | null;
+  acceptedSeller?: SellerSummary | null;
+  hasMatchingCategory?: boolean;
+}
+
+export interface NotificationView {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  requestId?: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface RealtimeEvent {
+  type: string;
+  title?: string;
+  message?: string;
+  requestId?: string | null;
+  payload?: Record<string, unknown>;
+  at?: number;
 }
