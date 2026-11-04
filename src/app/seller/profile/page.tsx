@@ -22,7 +22,8 @@ export default async function SellerProfilePage() {
     getSellerProfileByUserId(user.id),
     getCategoryTree(),
   ]);
-  if (!profile) redirect("/auth/register?role=seller");
+
+  const creating = !profile;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -31,19 +32,24 @@ export default async function SellerProfilePage() {
         بازگشت به پنل فروشنده
       </Link>
       <div className="mb-6">
-        <h1 className="text-2xl font-black">ویرایش فروشگاه</h1>
-        <p className="text-sm text-muted mt-1">اطلاعات و دسته‌بندی‌های فروشگاه خود را به‌روزرسانی کنید.</p>
+        <h1 className="text-2xl font-black">{creating ? "تکمیل اطلاعات فروشگاه" : "ویرایش فروشگاه"}</h1>
+        <p className="text-sm text-muted mt-1">
+          {creating
+            ? "برای فعال‌سازی فروشگاه و دریافت درخواست‌های مرتبط، اطلاعات زیر را تکمیل کنید."
+            : "اطلاعات و دسته‌بندی‌های فروشگاه خود را به‌روزرسانی کنید."}
+        </p>
       </div>
       <SellerProfileForm
         categories={categories}
+        creating={creating}
         initial={{
-          shopName: profile.shopName,
-          description: profile.description ?? "",
-          phone: profile.phone ?? "",
-          city: profile.city ?? "",
-          address: profile.address ?? "",
-          categoryIds: profile.categories.map(({ category }) => category.id),
-          status: profile.status,
+          shopName: profile?.shopName ?? "",
+          description: profile?.description ?? "",
+          phone: profile?.phone ?? "",
+          city: profile?.city ?? user.city ?? "",
+          address: profile?.address ?? "",
+          categoryIds: profile?.categories.map(({ category }) => category.id) ?? [],
+          status: profile?.status ?? "PENDING",
         }}
       />
     </div>

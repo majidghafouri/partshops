@@ -35,7 +35,9 @@ export default function Header({ user, unreadCount = 0 }: { user: SessionUser | 
     user?.role === "ADMIN"
       ? "/admin"
       : user?.role === "SELLER"
-        ? "/seller/dashboard"
+        ? user?.sellerProfileId
+          ? "/seller/dashboard"
+          : "/seller/profile"
         : "/account/requests";
 
   const dashboardLabel =

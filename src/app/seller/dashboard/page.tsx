@@ -42,10 +42,10 @@ export default async function SellerDashboardPage() {
   if (!user) redirect("/auth/login?next=/seller/dashboard");
   if (user.role === "CUSTOMER") redirect("/account/requests");
   if (user.role === "ADMIN") redirect("/admin");
-  if (!user.sellerProfileId) redirect("/auth/register?role=seller");
+  if (!user.sellerProfileId) redirect("/seller/profile");
 
   const profile = await getSellerProfileByUserId(user.id);
-  if (!profile) redirect("/auth/register?role=seller");
+  if (!profile) redirect("/seller/profile");
 
   const approved = profile.status === "APPROVED";
   const [available, offers, accepted] = approved
