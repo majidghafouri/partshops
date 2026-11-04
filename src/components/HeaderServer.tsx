@@ -1,19 +1,9 @@
 import Header from "./Header";
-import { getCategories } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 
 export default async function HeaderServer() {
   const user = await getSessionUser();
-  const [categories, cartCount] = await Promise.all([
-    getCategories(),
-    user ? prisma.cartItem.aggregate({ where: { userId: user.id }, _sum: { quantity: true } }) : null,
-  ]);
-  return (
-    <Header
-      categories={categories}
-      user={user}
-      cartCount={user ? cartCount?._sum.quantity ?? 0 : 0}
-    />
-  );
+  const unreadCount = user ? await getUnreadNotificationCount(user.id) : 0;
+  return <Header user={user} unreadCount={unreadCount} />;
 }

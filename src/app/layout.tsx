@@ -5,21 +5,13 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://partshops.ir"),
-  title: "پارت شاپ | بازار آنلاین لوازم یدکی خودرو",
-  description: "خرید و فروش لوازم یدکی خودرو با ضمانت اصالت کالا. قطعات موتوری، بدنه، ترمز، برقی و تمامی لوازم یدکی خودروهای ایرانی و خارجی.",
+  title: "پارت شاپ | بازار درخواست قطعات یدکی خودرو",
+  description: "قطعه مورد نیاز خودروی خود را ثبت کنید و از فروشندگان معتبر لوازم یدکی، پیشنهاد قیمت دریافت کنید.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fa" dir="rtl" className="dark h-full antialiased">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" style={{ fontFamily: "Vazirmatn, Tahoma, sans-serif" }}>
         <HeaderServer />
         <main className="flex-1">{children}</main>
