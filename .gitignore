@@ -40,6 +40,10 @@ src/generated/prisma
 # vercel
 .vercel
 
+# capacitor / android (generated native project)
+/android
+/capacitor.config.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
