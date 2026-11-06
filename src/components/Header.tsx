@@ -14,6 +14,7 @@ import {
   ChevronDown,
   LogOut,
   Home,
+  Settings,
 } from "lucide-react";
 import type { SessionUser } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -116,6 +117,10 @@ export default function Header({ user, unreadCount = 0 }: { user: SessionUser | 
                       <Link href="/notifications" className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover text-sm">
                         <ClipboardList className="w-4 h-4" />
                         اعلان‌ها
+                      </Link>
+                      <Link href="/account/settings" className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover text-sm">
+                        <Settings className="w-4 h-4" />
+                        تنظیمات حساب
                       </Link>
                       <button
                         onClick={handleLogout}
