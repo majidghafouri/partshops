@@ -1,6 +1,6 @@
 # Partshop — resume TODO
 
-Updated: 2026-11-04. Production build is deployed to `https://partshops.ir`; next work is below.
+Updated: 2026-11-06. Production build is deployed to `https://partshops.ir`; next work is below.
 
 ## Must finish
 
@@ -14,7 +14,6 @@ Updated: 2026-11-04. Production build is deployed to `https://partshops.ir`; nex
   - Rotate the Google client secret if it was shared in chat.
 - [ ] Rotate or replace the generated production admin credential, ideally by adding a proper admin password-change flow.
 - [ ] Refresh local Vercel Blob OIDC token if local upload testing is needed again via `vercel env pull .env.local`.
-- [ ] Decide whether to commit/push: this workspace currently has source changes but no Git repo metadata for normal commit/push flow.
 
 ## Production notes already done
 
@@ -22,6 +21,8 @@ Updated: 2026-11-04. Production build is deployed to `https://partshops.ir`; nex
 - Private Vercel Blob uploads were converted to OIDC presigned flow (`handleUploadPresigned` + `uploadPresigned`).
 - Verified production image/audio/video upload, request creation, authenticated attachment proxy, and anonymous `401` blocking; smoke user and blobs were cleaned up.
 - OTP production fallback correctly returns Farsi `503` with `field: "phone"` until Kavenegar is configured.
+- Git repository is live on GitHub (`majidghafouri/partshops`); all source changes are committed/pushed and deployed.
+- Seller signup is now minimal with guided profile onboarding; Dana font applied.
 
 ## Optional later polish
 
