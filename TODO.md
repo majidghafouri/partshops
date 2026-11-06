@@ -12,7 +12,7 @@ Updated: 2026-11-06. Production build is deployed to `https://partshops.ir`; nex
   - Authorized redirect URIs: `https://partshops.ir/api/auth/google/callback` and `http://localhost:3000/api/auth/google/callback`.
   - Click through production Google login/register once.
   - Rotate the Google client secret if it was shared in chat.
-- [ ] Rotate or replace the generated production admin credential, ideally by adding a proper admin password-change flow.
+- [x] Admin/user password-change flow added (`/api/auth/password`, `/account/settings`); admin should still rotate the seeded credential via the settings page.
 - [ ] Refresh local Vercel Blob OIDC token if local upload testing is needed again via `vercel env pull .env.local`.
 
 ## Production notes already done
@@ -26,6 +26,7 @@ Updated: 2026-11-06. Production build is deployed to `https://partshops.ir`; nex
 
 ## Optional later polish
 
-- [ ] Add email verification, password reset, and account settings only if requested.
-- [ ] Add loading/error/404 polish, SEO/sitemap/robots, and toast notifications.
+- [x] Account settings page added (profile + password change).
+- [ ] Email verification and password reset (deferred: needs email/SMS provider; Kavenegar pending).
+- [x] 404/error/loading pages, sitemap, robots, and toast notifications added.
 - [ ] Add orphan Blob cleanup if attachment rows are deleted without deleting Blob objects.
