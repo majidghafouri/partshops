@@ -4,6 +4,7 @@ import HeaderServer from "@/components/HeaderServer";
 import Footer from "@/components/Footer";
 import ToastProvider from "@/components/ToastProvider";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import BottomNavServer from "@/components/BottomNavServer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://partshops.ir"),
@@ -22,8 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ToastProvider>
           <ServiceWorkerRegistrar />
           <HeaderServer />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-20 md:pb-0">{children}</main>
           <Footer />
+          <BottomNavServer />
         </ToastProvider>
       </body>
     </html>
